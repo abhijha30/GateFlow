@@ -5,21 +5,34 @@ import datetime
 def show():
     st.markdown("## 🎓 GateFlow - Student Portal")
 
-    today = datetime.date.today()
     events = get_events().data
 
     if not events:
         st.warning("No events available")
         return
 
-    # 🔥 FILTER ACTIVE EVENTS
+    today = datetime.date.today()
     valid_events = []
+
+    # 🔥 SAFE FILTER (fixes your issue)
     for e in events:
-        if e.get("deadline"):
-            if datetime.date.fromisoformat(e["deadline"]) >= today:
+        try:
+            deadline = e.get("deadline")
+
+            if deadline:
+                # handle timestamp issue
+                deadline_date = datetime.date.fromisoformat(deadline.split("T")[0])
+
+                if deadline_date >= today:
+                    valid_events.append(e)
+            else:
+                # if no deadline → still show
                 valid_events.append(e)
 
-    # 🔥 SHOW UPCOMING EVENTS
+        except:
+            valid_events.append(e)
+
+    # 🎯 SHOW EVENTS
     st.markdown("### 📢 Upcoming Events")
 
     if not valid_events:
@@ -28,26 +41,31 @@ def show():
 
     for e in valid_events:
         st.markdown(f"""
-        <div class='card'>
+        <div style="
+            background:#f1f5f9;
+            padding:15px;
+            border-radius:12px;
+            margin-bottom:10px;
+        ">
         🎯 <b>{e['name']}</b><br>
-        📅 Date: {e['date']}<br>
-        ⏳ Deadline: {e['deadline']}<br>
-        📍 Venue: {e['venue']}
+        📅 {e['date']}<br>
+        ⏳ Deadline: {e.get('deadline','N/A')}<br>
+        📍 {e['venue']}
         </div>
         """, unsafe_allow_html=True)
 
-    # 🔥 REGISTRATION FORM
-    st.markdown("### 📝 Register for Event")
+    # 📝 REGISTRATION FORM
+    st.markdown("### 📝 Register")
 
     event_map = {e["name"]: e["id"] for e in valid_events}
 
-    name = st.text_input("👤 Full Name")
+    name = st.text_input("👤 Name")
     email = st.text_input("📧 Email")
-    event = st.selectbox("🎯 Select Event", list(event_map.keys()))
+    event = st.selectbox("🎯 Event", list(event_map.keys()))
 
-    if st.button("🚀 Register"):
+    if st.button("🚀 Register", use_container_width=True):
         if not name or not email:
-            st.warning("Please fill all fields")
+            st.warning("Fill all fields")
             return
 
         res = register_user({
@@ -58,6 +76,6 @@ def show():
         })
 
         if res == "duplicate":
-            st.warning("Already registered!")
+            st.warning("Already registered")
         else:
-            st.success("✅ Registered! Wait for admin approval.")
+            st.success("✅ Registered! Wait for approval")
