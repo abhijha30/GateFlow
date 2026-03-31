@@ -4,10 +4,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-supabase = create_client(
-    os.getenv("https://ahaiguauzayaslaazokj.supabase.co"),
-    os.getenv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoYWlndWF1emF5YXNsYWF6b2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MjQ2OTYsImV4cCI6MjA5MDUwMDY5Nn0.K6WMZeR-TjAoq0zWfTj-5Gi2Xn-zqjmiC23fz6yk-cg")
-)
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise Exception("Supabase credentials missing!")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # 🔥 DEBUG PRINT
 print("Connected to Supabase")
