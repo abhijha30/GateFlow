@@ -1,16 +1,26 @@
 from supabase import create_client
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 supabase = create_client(
-    os.getenv("https://ahaiguauzayaslaazokj.supabase.co")
-    os.getenv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoYWlndWF1emF5YXNsYWF6b2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MjQ2OTYsImV4cCI6MjA5MDUwMDY5Nn0.K6WMZeR-TjAoq0zWfTj-5Gi2Xn-zqjmiC23fz6yk-cg")
+    os.getenv("SUPABASE_URL"),
+    os.getenv("SUPABASE_KEY")
 )
 
-def get_events():
-    return supabase.table("events").select("*").execute()
+# 🔥 DEBUG PRINT
+print("Connected to Supabase")
 
 def create_event(data):
-    return supabase.table("events").insert(data).execute()
+    res = supabase.table("events").insert(data).execute()
+    print("CREATE EVENT:", res)
+    return res
+
+def get_events():
+    res = supabase.table("events").select("*").execute()
+    print("FETCH EVENTS:", res)
+    return res
 
 def register_user(data):
     check = supabase.table("registrations") \
