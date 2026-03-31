@@ -13,22 +13,21 @@ def show():
     st.markdown("### 🛠 Admin Dashboard")
 
     # CREATE EVENT
-    st.subheader("Create Event")
+   st.subheader("📅 Create Event")
 
-    name = st.text_input("Event Name")
-    date = st.text_input("Date")
-    venue = st.text_input("Venue")
+name = st.text_input("Event Name")
+date = st.date_input("Event Date")
+deadline = st.date_input("Registration Deadline")
+venue = st.text_input("Venue")
 
-    if st.button("Create Event"):
-        create_event({
-            "name": name,
-            "date": date,
-            "venue": venue
-        })
-        st.success("Event Created")
-
-    st.divider()
-
+if st.button("Create Event"):
+    create_event({
+        "name": name,
+        "date": str(date),
+        "deadline": str(deadline),
+        "venue": venue
+    })
+    st.success("Event Created Successfully")
     # APPROVAL
     st.subheader("Pending Registrations")
 
