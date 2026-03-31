@@ -6,30 +6,34 @@ from utils.mail import send_qr
 import uuid
 
 def show():
+    # 🔐 LOGIN CHECK
     if "admin" not in st.session_state:
         admin_login()
         return
 
-    st.markdown("### 🛠 Admin Dashboard")
+    st.markdown("## 🛠 GateFlow - Admin Dashboard")
 
-    # CREATE EVENT
-   st.subheader("📅 Create Event")
+    # 📅 CREATE EVENT
+    st.subheader("📅 Create Event")
 
-name = st.text_input("Event Name")
-date = st.date_input("Event Date")
-deadline = st.date_input("Registration Deadline")
-venue = st.text_input("Venue")
+    name = st.text_input("Event Name")
+    date = st.date_input("Event Date")
+    deadline = st.date_input("Registration Deadline")
+    venue = st.text_input("Venue")
 
-if st.button("Create Event"):
-    create_event({
-        "name": name,
-        "date": str(date),
-        "deadline": str(deadline),
-        "venue": venue
-    })
-    st.success("Event Created Successfully")
-    # APPROVAL
-    st.subheader("Pending Registrations")
+    if st.button("Create Event"):
+        create_event({
+            "name": name,
+            "date": str(date),
+            "deadline": str(deadline),
+            "venue": venue
+        })
+        st.success("✅ Event Created")
+
+    st.divider()
+
+    # 📥 APPROVAL SECTION
+    st.subheader("📥 Pending Registrations")
 
     users = get_pending().data
 
@@ -38,26 +42,25 @@ if st.button("Create Event"):
         return
 
     for user in users:
-        with st.container():
-            st.markdown(f"""
-            <div class='card'>
-            👤 {user['name']} <br>
-            📧 {user['email']}
-            </div>
-            """, unsafe_allow_html=True)
+        st.markdown(f"""
+        **👤 {user['name']}**  
+        📧 {user['email']}
+        """)
 
-            col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
-            if col1.button(f"Approve {user['id']}"):
-                qr_id = str(uuid.uuid4())
-                file = f"{qr_id}.png"
+        if col1.button(f"Approve {user['id']}"):
+            qr_id = str(uuid.uuid4())
+            file = f"{qr_id}.png"
 
-                generate_qr(qr_id, file)
-                update_status(user["id"], "approved", qr_id)
-                send_qr(user["email"], file)
+            generate_qr(qr_id, file)
+            update_status(user["id"], "approved", qr_id)
+            send_qr(user["email"], file)
 
-                st.success("Approved & QR sent")
+            st.success("✅ Approved & QR sent")
 
-            if col2.button(f"Reject {user['id']}"):
-                update_status(user["id"], "rejected", "")
-                st.error("Rejected")
+        if col2.button(f"Reject {user['id']}"):
+            update_status(user["id"], "rejected", "")
+            st.error("❌ Rejected")
+
+        st.divider()
