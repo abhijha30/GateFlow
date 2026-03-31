@@ -6,27 +6,36 @@ from utils.mail import send_qr
 import uuid
 
 def show():
-    # 🔐 LOGIN CHECK
+
+    # 🔐 LOGIN
     if "admin" not in st.session_state:
         admin_login()
         return
 
-    st.markdown("## 🛠 GateFlow - Admin Dashboard")
+    st.markdown("## 🛠 GateFlow Admin Dashboard")
 
     # 📅 CREATE EVENT
-   if st.button("Create Event", use_container_width=True):
-    if not name or not venue:
-        st.warning("Fill all fields")
-    else:
-        create_event({
-            "name": name,
-            "date": str(date),
-            "deadline": str(deadline),
-            "venue": venue
-        })
-        st.success("Event Created")
+    st.subheader("📅 Create Event")
 
-        st.rerun()  # 🔥 IMPORTANT FIX
+    name = st.text_input("Event Name")
+    date = st.date_input("Event Date")
+    deadline = st.date_input("Registration Deadline")
+    venue = st.text_input("Venue")
+
+    if st.button("Create Event", use_container_width=True):
+        if not name or not venue:
+            st.warning("Please fill all fields")
+        else:
+            create_event({
+                "name": name,
+                "date": str(date),
+                "deadline": str(deadline),
+                "venue": venue
+            })
+            st.success("✅ Event Created")
+            st.rerun()
+
+    st.divider()
 
     # 📥 APPROVAL SECTION
     st.subheader("📥 Pending Registrations")
@@ -38,6 +47,7 @@ def show():
         return
 
     for user in users:
+
         st.markdown(f"""
         **👤 {user['name']}**  
         📧 {user['email']}
