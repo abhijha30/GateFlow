@@ -2,16 +2,18 @@ import streamlit as st
 from utils.db import get_all
 
 def show():
-    st.title("📷 GateFlow - Scanner")
+    st.markdown("### 📷 QR Verification")
 
     code = st.text_input("Enter QR Code")
 
-    data = get_all().data
+    if not code:
+        return
 
-    if code:
-        for user in data:
-            if user["qr_code"] == code:
-                if user["status"] == "approved":
-                    st.success("✅ Entry Allowed")
-                else:
-                    st.error("❌ Not Approved")
+    users = get_all().data
+
+    for u in users:
+        if u["qr_code"] == code:
+            if u["status"] == "approved":
+                st.success("✅ Entry Allowed")
+            else:
+                st.error("❌ Not Approved")
