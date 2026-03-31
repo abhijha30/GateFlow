@@ -1,11 +1,13 @@
 import streamlit as st
 
 def admin_login():
-    user = st.text_input("Admin Username")
-    pwd = st.text_input("Password", type="password")
+    st.subheader("🔐 Admin Login")
+
+    username = st.text_input("i_avinashjha")
+    password = st.text_input("Password", type="Avinash@123")
 
     if st.button("Login"):
-        if user == "admin" and pwd == "1234":
+        if username == "admin" and password == "gateflow123":
             st.session_state["admin"] = True
         else:
-            st.error("Invalid Credentials")
+            st.error("Invalid credentials")
