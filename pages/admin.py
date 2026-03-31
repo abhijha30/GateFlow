@@ -14,23 +14,19 @@ def show():
     st.markdown("## 🛠 GateFlow - Admin Dashboard")
 
     # 📅 CREATE EVENT
-    st.subheader("📅 Create Event")
-
-    name = st.text_input("Event Name")
-    date = st.date_input("Event Date")
-    deadline = st.date_input("Registration Deadline")
-    venue = st.text_input("Venue")
-
-    if st.button("Create Event"):
+   if st.button("Create Event", use_container_width=True):
+    if not name or not venue:
+        st.warning("Fill all fields")
+    else:
         create_event({
             "name": name,
             "date": str(date),
             "deadline": str(deadline),
             "venue": venue
         })
-        st.success("✅ Event Created")
+        st.success("Event Created")
 
-    st.divider()
+        st.rerun()  # 🔥 IMPORTANT FIX
 
     # 📥 APPROVAL SECTION
     st.subheader("📥 Pending Registrations")
