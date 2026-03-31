@@ -1,8 +1,8 @@
 import streamlit as st
+from utils.auth import admin_login
 from utils.db import *
 from utils.qr import generate_qr
 from utils.mail import send_qr
-from utils.auth import admin_login
 import uuid
 
 def show():
@@ -10,33 +10,55 @@ def show():
         admin_login()
         return
 
-    st.title("🛠 GateFlow - Admin Dashboard")
+    st.markdown("### 🛠 Admin Dashboard")
 
+    # CREATE EVENT
     st.subheader("Create Event")
+
     name = st.text_input("Event Name")
     date = st.text_input("Date")
     venue = st.text_input("Venue")
 
-    if st.button("Create"):
-        create_event({"name": name, "date": date, "venue": venue})
+    if st.button("Create Event"):
+        create_event({
+            "name": name,
+            "date": date,
+            "venue": venue
+        })
         st.success("Event Created")
 
-    st.subheader("Pending Approvals")
-    data = get_pending().data
+    st.divider()
 
-    for user in data:
-        st.write(user["name"], user["email"])
+    # APPROVAL
+    st.subheader("Pending Registrations")
 
-        if st.button(f"Approve {user['id']}"):
-            qr_id = str(uuid.uuid4())
-            file = f"{qr_id}.png"
+    users = get_pending().data
 
-            generate_qr(qr_id, file)
-            update_status(user["id"], "approved", qr_id)
-            send_qr(user["email"], file)
+    if not users:
+        st.info("No pending requests")
+        return
 
-            st.success("Approved & Email Sent")
+    for user in users:
+        with st.container():
+            st.markdown(f"""
+            <div class='card'>
+            👤 {user['name']} <br>
+            📧 {user['email']}
+            </div>
+            """, unsafe_allow_html=True)
 
-        if st.button(f"Reject {user['id']}"):
-            update_status(user["id"], "rejected", "")
-            st.error("Rejected")
+            col1, col2 = st.columns(2)
+
+            if col1.button(f"Approve {user['id']}"):
+                qr_id = str(uuid.uuid4())
+                file = f"{qr_id}.png"
+
+                generate_qr(qr_id, file)
+                update_status(user["id"], "approved", qr_id)
+                send_qr(user["email"], file)
+
+                st.success("Approved & QR sent")
+
+            if col2.button(f"Reject {user['id']}"):
+                update_status(user["id"], "rejected", "")
+                st.error("Rejected")
