@@ -5,6 +5,7 @@ from utils.qr import generate_qr
 from utils.mail import send_qr
 import uuid
 import pandas as pd
+import base64
 
 def show():
 
@@ -22,19 +23,27 @@ def show():
     date = st.date_input("Event Date")
     deadline = st.date_input("Registration Deadline")
     venue = st.text_input("Venue")
-    capacity = st.number_input("Capacity", min_value=1)
+    capacity = st.number_input("Capacity", min_value=1, value=100)
 
     poster = st.file_uploader("Upload Poster", type=["png","jpg","jpeg"])
 
+    # ✅ FIXED INDENTATION
     if st.button("Create Event", use_container_width=True):
+
+        poster_data = None
+
+        if poster:
+            poster_data = base64.b64encode(poster.read()).decode()
+
         create_event({
             "name": name,
             "date": str(date),
             "deadline": str(deadline),
             "venue": venue,
             "capacity": capacity,
-            "poster": poster.name if poster else None
+            "poster": poster_data
         })
+
         st.success("✅ Event Created")
         st.rerun()
 
@@ -124,7 +133,6 @@ def show():
 
         st.bar_chart(df["status"].value_counts())
 
-        # DOWNLOAD
         st.download_button(
             "⬇️ Download CSV",
             df.to_csv(index=False),
