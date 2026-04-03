@@ -5,7 +5,7 @@ import datetime
 
 def show():
 
-    # 🔐 LOGIN
+    # 🔐 LOGIN (OPTIONAL OTP)
     if "student" not in st.session_state:
         student_login()
         return
@@ -21,6 +21,7 @@ def show():
     today = datetime.date.today()
     valid_events = []
 
+    # ✅ FIXED DEADLINE FILTER
     for e in events:
         try:
             deadline = e.get("deadline")
@@ -54,32 +55,46 @@ def show():
 
     st.divider()
 
-    # 📝 FORM
+    # 📝 REGISTRATION FORM
     st.markdown("### 📝 Register")
 
-    name = st.text_input("Name")
-    mobile = st.text_input("Mobile")
-    email = st.session_state["student"]
+    name = st.text_input("👤 Name")
+    mobile = st.text_input("📱 Mobile")
 
-    course = st.selectbox("Course", ["BBA","BCA"])
-    section = st.selectbox("Section", list("ABCDEFG"))
-    year = st.selectbox("Year", ["1st","2nd","3rd"])
+    # ✅ EMAIL FIX (VISIBLE + AUTO FILL)
+    email_default = st.session_state.get("student", "")
+    email = st.text_input("📧 Email", value=email_default)
 
-    event = st.selectbox("Event", list(event_map.keys()))
+    course = st.selectbox("🎓 Course", ["BBA","BCA"])
+    section = st.selectbox("🏫 Section", list("ABCDEFG"))
+    year = st.selectbox("📘 Year", ["1st","2nd","3rd"])
+
+    event = st.selectbox("🎯 Event", list(event_map.keys()))
 
     if st.button("Register", use_container_width=True):
+
+        # ✅ BASIC VALIDATION
+        if not name or not mobile or not email:
+            st.warning("Please fill all fields")
+            return
 
         all_regs = get_all().data
         event_id = event_map[event]
 
-        # 🚫 CAPACITY CHECK
+        # 🔥 FIXED CAPACITY CHECK
         count = len([r for r in all_regs if r["event_id"] == event_id])
         selected_event = [e for e in valid_events if e["id"] == event_id][0]
 
-        if count >= selected_event.get("capacity", 9999):
-            st.error("Event Full 🚫")
+        capacity = selected_event.get("capacity")
+
+        if capacity is None:
+            capacity = 9999  # unlimited fallback
+
+        if count >= int(capacity):
+            st.error("🚫 Event Full")
             return
 
+        # ✅ REGISTER USER
         res = register_user({
             "name": name,
             "mobile": mobile,
