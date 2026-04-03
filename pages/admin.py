@@ -9,7 +9,7 @@ import base64
 
 def show():
 
-    # 🔐 LOGIN CHECK
+    # 🔐 LOGIN
     if not st.session_state.get("admin"):
         admin_login()
         return
@@ -23,15 +23,17 @@ def show():
     date = st.date_input("Event Date")
     deadline = st.date_input("Registration Deadline")
     venue = st.text_input("Venue")
-    capacity = st.number_input("Capacity", min_value=1, value=100)
+    capacity = st.number_input("Capacity", min_value=1, step=1)
 
     poster = st.file_uploader("Upload Poster", type=["png","jpg","jpeg"])
 
-    # ✅ FIXED INDENTATION
     if st.button("Create Event", use_container_width=True):
 
-        poster_data = None
+        if not name or not venue:
+            st.warning("Please fill all fields")
+            return
 
+        poster_data = None
         if poster:
             poster_data = base64.b64encode(poster.read()).decode()
 
@@ -40,7 +42,7 @@ def show():
             "date": str(date),
             "deadline": str(deadline),
             "venue": venue,
-            "capacity": capacity,
+            "capacity": int(capacity),
             "poster": poster_data
         })
 
@@ -49,33 +51,35 @@ def show():
 
     st.divider()
 
-    # ================== SHOW EVENTS ==================
-st.subheader("📢 All Events")
+    # ================== EVENTS LIST ==================
+    st.subheader("📢 All Events")
 
-events = get_events().data
+    events = get_events().data or []
 
-if not events:
-    st.info("No events created yet")
+    if not events:
+        st.info("No events created")
 
-for i, e in enumerate(events, start=1):
+    for i, e in enumerate(events, start=1):
 
-    col1, col2 = st.columns([4,1])
+        col1, col2 = st.columns([4,1])
 
-    with col1:
-        st.markdown(f"""
-        {i}. 🎯 {e['name']}  
-        📅 {e['date']} | ⏳ {e.get('deadline','N/A')}  
-        📍 {e['venue']}
-        """)
+        with col1:
+            st.markdown(f"""
+            **{i}. 🎯 {e['name']}**  
+            📅 {e['date']} | ⏳ {e.get('deadline','N/A')}  
+            📍 {e['venue']} | 👥 Capacity: {e.get('capacity','∞')}
+            """)
 
-    with col2:
-        if st.button(f"🗑 Delete {e['id']}"):
-            delete_event(e["id"])
-            st.success("✅ Event Deleted")
-            st.rerun()
+        with col2:
+            if st.button("🗑 Delete", key=f"delete_{e['id']}"):
+                delete_event(e["id"])
+                st.success("✅ Event Deleted")
+                st.rerun()
+
+    st.divider()
 
     # ================== REGISTRATIONS ==================
-    data = get_all().data
+    data = get_all().data or []
 
     tab1, tab2, tab3 = st.tabs(["⏳ Pending", "✅ Approved", "❌ Rejected"])
 
@@ -97,18 +101,22 @@ for i, e in enumerate(events, start=1):
 
             col1, col2 = st.columns(2)
 
-            if col1.button(f"Approve {user['id']}"):
+            if col1.button("Approve", key=f"approve_{user['id']}"):
                 qr_id = str(uuid.uuid4())
 
                 file_path = generate_qr(qr_id)
 
                 update_status(user["id"], "approved", qr_id)
-                send_qr(user["email"], file_path)
 
-                st.success("✅ Approved & QR sent")
+                try:
+                    send_qr(user["email"], file_path)
+                except:
+                    st.warning("QR created but email failed")
+
+                st.success("✅ Approved")
                 st.rerun()
 
-            if col2.button(f"Reject {user['id']}"):
+            if col2.button("Reject", key=f"reject_{user['id']}"):
                 update_status(user["id"], "rejected", "")
                 st.error("❌ Rejected")
                 st.rerun()
@@ -119,12 +127,18 @@ for i, e in enumerate(events, start=1):
     with tab2:
         approved = [u for u in data if u["status"] == "approved"]
 
+        if not approved:
+            st.info("No approved users")
+
         for i, user in enumerate(approved, start=1):
             st.success(f"{i}. {user['name']} | {user.get('course','')}")
 
     # 🔹 REJECTED
     with tab3:
         rejected = [u for u in data if u["status"] == "rejected"]
+
+        if not rejected:
+            st.info("No rejected users")
 
         for i, user in enumerate(rejected, start=1):
             st.error(f"{i}. {user['name']}")
@@ -133,19 +147,24 @@ for i, e in enumerate(events, start=1):
     st.divider()
     st.subheader("📊 Analytics")
 
+    if not data:
+        st.info("No data available")
+        return
+
     df = pd.DataFrame(data)
 
-    if not df.empty:
-        col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-        col1.metric("Total", len(df))
-        col2.metric("Approved", len(df[df["status"]=="approved"]))
-        col3.metric("Pending", len(df[df["status"]=="pending"]))
+    col1.metric("Total", len(df))
+    col2.metric("Approved", len(df[df["status"]=="approved"]))
+    col3.metric("Pending", len(df[df["status"]=="pending"]))
 
-        st.bar_chart(df["status"].value_counts())
+    st.bar_chart(df["status"].value_counts())
 
-        st.download_button(
-            "⬇️ Download CSV",
-            df.to_csv(index=False),
-            "attendees.csv"
-        )
+    # ✅ SAFE DOWNLOAD (NO ERROR)
+    st.download_button(
+        "⬇️ Download Attendee List",
+        df.to_csv(index=False),
+        "attendees.csv",
+        key="download_attendees"
+    )
