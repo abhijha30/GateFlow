@@ -65,3 +65,6 @@ def update_status(id, status, qr):
 @st.cache_data(ttl=60)
 def get_all():
     return supabase.table("registrations").select("*").execute()
+#Delete Event
+def delete_event(event_id):
+    return supabase.table("events").delete().eq("id", event_id).execute()
