@@ -2,6 +2,7 @@ import streamlit as st
 from utils.db import *
 from utils.auth import student_login
 import datetime
+import base64
 
 def show():
 
@@ -49,8 +50,11 @@ def show():
         """, unsafe_allow_html=True)
 
         if e.get("poster"):
-            st.image(e["poster"], width=250)
-
+    try:
+        image_bytes = base64.b64decode(e["poster"])
+        st.image(image_bytes, width=250)
+    except:
+        st.warning("Poster failed to load")
         event_map[e["name"]] = e["id"]
 
     st.divider()
