@@ -4,7 +4,7 @@ from utils.db import get_all
 def show():
     st.markdown("### 📷 QR Verification")
 
-    code = st.text_input("Enter QR Code")
+    code = st.text_input("Scan / Enter QR Code")
 
     if not code:
         return
@@ -14,6 +14,9 @@ def show():
     for u in users:
         if u["qr_code"] == code:
             if u["status"] == "approved":
-                st.success("✅ Entry Allowed")
+                st.success(f"✅ Entry Allowed: {u['name']}")
             else:
                 st.error("❌ Not Approved")
+            return
+
+    st.warning("Invalid QR")
