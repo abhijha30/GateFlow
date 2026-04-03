@@ -1,22 +1,23 @@
 from supabase import create_client
 
-# 🔥 DIRECT CONNECTION (NO ENV ISSUES)
+# 🔥 DIRECT CONNECTION (WORKING)
 SUPABASE_URL = "https://ahaiguauzayaslaazokj.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoYWlndWF1emF5YXNsYWF6b2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MjQ2OTYsImV4cCI6MjA5MDUwMDY5Nn0.K6WMZeR-TjAoq0zWfTj-5Gi2Xn-zqjmiC23fz6yk-cg"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-# EVENTS
+# 📅 EVENTS
 def create_event(data):
     return supabase.table("events").insert(data).execute()
 
 def get_events():
-    return supabase.table("events").select("*").execute()
+    return supabase.table("events").select("*").order("id", desc=True).execute()
 
 
-# REGISTRATION
+# 📝 REGISTRATION
 def register_user(data):
+    # 🔁 prevent duplicate
     check = supabase.table("registrations") \
         .select("*") \
         .eq("email", data["email"]) \
@@ -30,7 +31,10 @@ def register_user(data):
 
 
 def get_pending():
-    return supabase.table("registrations").select("*").eq("status", "pending").execute()
+    return supabase.table("registrations") \
+        .select("*") \
+        .eq("status", "pending") \
+        .execute()
 
 
 def update_status(id, status, qr):
