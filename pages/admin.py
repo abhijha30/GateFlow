@@ -50,18 +50,29 @@ def show():
     st.divider()
 
     # ================== SHOW EVENTS ==================
-    st.subheader("📢 All Events")
+st.subheader("📢 All Events")
 
-    events = get_events().data
+events = get_events().data
 
-    for i, e in enumerate(events, start=1):
+if not events:
+    st.info("No events created yet")
+
+for i, e in enumerate(events, start=1):
+
+    col1, col2 = st.columns([4,1])
+
+    with col1:
         st.markdown(f"""
         {i}. 🎯 {e['name']}  
         📅 {e['date']} | ⏳ {e.get('deadline','N/A')}  
         📍 {e['venue']}
         """)
 
-    st.divider()
+    with col2:
+        if st.button(f"🗑 Delete {e['id']}"):
+            delete_event(e["id"])
+            st.success("✅ Event Deleted")
+            st.rerun()
 
     # ================== REGISTRATIONS ==================
     data = get_all().data
