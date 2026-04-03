@@ -6,7 +6,7 @@ import base64
 
 def show():
 
-    # 🔐 LOGIN (OPTIONAL OTP)
+    # 🔐 LOGIN
     if "student" not in st.session_state:
         student_login()
         return
@@ -22,16 +22,19 @@ def show():
     today = datetime.date.today()
     valid_events = []
 
-    # ✅ FIXED DEADLINE FILTER
+    # ✅ DEADLINE FILTER FIXED
     for e in events:
         try:
             deadline = e.get("deadline")
+
             if deadline:
                 d = datetime.date.fromisoformat(deadline.split("T")[0])
+
                 if d >= today:
                     valid_events.append(e)
             else:
                 valid_events.append(e)
+
         except:
             valid_events.append(e)
 
@@ -40,6 +43,7 @@ def show():
     event_map = {}
 
     for e in valid_events:
+
         st.markdown(f"""
         <div class="card">
         🎯 <b>{e['name']}</b><br>
@@ -49,23 +53,25 @@ def show():
         </div>
         """, unsafe_allow_html=True)
 
+        # ✅ FIXED IMAGE ERROR (BASE64 SUPPORT)
         if e.get("poster"):
-    try:
-        image_bytes = base64.b64decode(e["poster"])
-        st.image(image_bytes, width=250)
-    except:
-        st.warning("Poster failed to load")
+            try:
+                image_bytes = base64.b64decode(e["poster"])
+                st.image(image_bytes, width=250)
+            except:
+                st.warning("⚠️ Poster not supported")
+
         event_map[e["name"]] = e["id"]
 
     st.divider()
 
-    # 📝 REGISTRATION FORM
+    # ================= FORM =================
     st.markdown("### 📝 Register")
 
     name = st.text_input("👤 Name")
     mobile = st.text_input("📱 Mobile")
 
-    # ✅ EMAIL FIX (VISIBLE + AUTO FILL)
+    # ✅ EMAIL FIX (VISIBLE)
     email_default = st.session_state.get("student", "")
     email = st.text_input("📧 Email", value=email_default)
 
@@ -73,44 +79,61 @@ def show():
     section = st.selectbox("🏫 Section", list("ABCDEFG"))
     year = st.selectbox("📘 Year", ["1st","2nd","3rd"])
 
+    if not event_map:
+        st.warning("No active events")
+        return
+
     event = st.selectbox("🎯 Event", list(event_map.keys()))
 
+    # ================= REGISTER =================
     if st.button("Register", use_container_width=True):
 
-        # ✅ BASIC VALIDATION
+        # ✅ VALIDATION
         if not name or not mobile or not email:
             st.warning("Please fill all fields")
             return
 
-        all_regs = get_all().data
+        try:
+            all_regs = get_all().data or []
+        except:
+            st.error("⚠️ Database connection slow / failed")
+            return
+
         event_id = event_map[event]
 
-        # 🔥 FIXED CAPACITY CHECK
-        count = len([r for r in all_regs if r["event_id"] == event_id])
-        selected_event = [e for e in valid_events if e["id"] == event_id][0]
+        # ✅ SAFE CAPACITY CHECK
+        count = len([r for r in all_regs if r.get("event_id") == event_id])
 
-        capacity = selected_event.get("capacity")
+        selected_event = next((e for e in valid_events if e["id"] == event_id), None)
 
-        if capacity is None:
-            capacity = 9999  # unlimited fallback
+        capacity = 9999
+        if selected_event:
+            try:
+                capacity = int(selected_event.get("capacity") or 9999)
+            except:
+                capacity = 9999
 
-        if count >= int(capacity):
+        if count >= capacity:
             st.error("🚫 Event Full")
             return
 
-        # ✅ REGISTER USER
-        res = register_user({
-            "name": name,
-            "mobile": mobile,
-            "email": email,
-            "course": course,
-            "section": section,
-            "year": year,
-            "event_id": event_id,
-            "status": "pending"
-        })
+        # ✅ REGISTER
+        try:
+            res = register_user({
+                "name": name,
+                "mobile": mobile,
+                "email": email,
+                "course": course,
+                "section": section,
+                "year": year,
+                "event_id": event_id,
+                "status": "pending"
+            })
 
-        if res == "duplicate":
-            st.warning("Already registered")
-        else:
-            st.success("✅ Registered! Wait for approval")
+            if res == "duplicate":
+                st.warning("Already registered")
+            else:
+                st.success("✅ Registered! Wait for approval")
+
+        except Exception as e:
+            st.error("⚠️ Registration failed (Slow DB / Network)")
