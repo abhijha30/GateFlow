@@ -102,6 +102,6 @@ elif menu == "Scanner":
 # 🔥 FOOTER
 st.divider()
 st.markdown(
-    "<center style='color:gray;'>© 2026 GateFlow | Final Year Project</center>",
+    "<center style='color:gray;'>© 2026 GateFlow </center>",
     unsafe_allow_html=True
 )
