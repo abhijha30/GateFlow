@@ -6,6 +6,7 @@ from utils.mail import send_qr
 import uuid
 import pandas as pd
 import base64
+import os
 
 def show():
 
@@ -65,10 +66,14 @@ def show():
 
         with col1:
             st.markdown(f"""
-            **{i}. 🎯 {e['name']}**  
-            📅 {e['date']} | ⏳ {e.get('deadline','N/A')}  
-            📍 {e['venue']} | 👥 Capacity: {e.get('capacity','∞')}
-            """)
+            <div class="card">
+            <b>{i}. 🎯 {e['name']}</b><br>
+            📅 {e['date']}<br>
+            ⏳ {e.get('deadline','N/A')}<br>
+            📍 {e['venue']}<br>
+            👥 Capacity: {e.get('capacity','∞')}
+            </div>
+            """, unsafe_allow_html=True)
 
         with col2:
             if st.button("🗑 Delete", key=f"delete_{e['id']}"):
@@ -101,21 +106,33 @@ def show():
 
             col1, col2 = st.columns(2)
 
+            # ✅ APPROVE
             if col1.button("Approve", key=f"approve_{user['id']}"):
+
                 qr_id = str(uuid.uuid4())
+                file_path = f"{qr_id}.png"
 
-                file_path = generate_qr(qr_id)
+                # ✅ Generate QR
+                generate_qr(qr_id, file_path)
 
+                # ✅ Update DB
                 update_status(user["id"], "approved", qr_id)
 
-                try:
-                    send_qr(user["email"], file_path)
-                except:
-                    st.warning("QR created but email failed")
+                # ✅ Send Mail
+                success = send_qr(user["email"], file_path)
 
-                st.success("✅ Approved")
+                if success:
+                    st.success("✅ Approved & QR sent")
+                else:
+                    st.warning("⚠ Approved but email failed")
+
+                # 🧹 Delete temp QR file
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+
                 st.rerun()
 
+            # ❌ REJECT
             if col2.button("Reject", key=f"reject_{user['id']}"):
                 update_status(user["id"], "rejected", "")
                 st.error("❌ Rejected")
@@ -161,10 +178,10 @@ def show():
 
     st.bar_chart(df["status"].value_counts())
 
-    # ✅ SAFE DOWNLOAD (NO ERROR)
+    # ✅ DOWNLOAD FIX (UNIQUE KEY)
     st.download_button(
         "⬇️ Download Attendee List",
         df.to_csv(index=False),
         "attendees.csv",
-        key="download_attendees"
+        key="download_attendees_unique"
     )
