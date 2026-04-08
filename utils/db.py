@@ -68,3 +68,4 @@ def get_all():
 #Delete Event
 def delete_event(event_id):
     return supabase.table("events").delete().eq("id", event_id).execute()
+
