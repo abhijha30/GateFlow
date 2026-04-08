@@ -11,55 +11,82 @@ st.set_page_config(
 # 🔥 GLOBAL UI STYLE (UPGRADED)
 st.markdown("""
 <style>
-/* Background */
+
+/* 🌌 Background */
 body {
-    background-color: #0f172a;
+    background: linear-gradient(135deg, #0f172a, #020617);
 }
 
-/* Container */
+/* 📦 Container */
 .block-container {
-    padding-top: 2rem;
-    max-width: 900px;
+    padding-top: 1.5rem;
+    max-width: 1000px;
     margin: auto;
 }
 
-/* Headings */
+/* 🧠 Headings */
 h1, h2, h3 {
-    color: white;
-    text-align: center;
+    color: #f8fafc;
+    font-weight: 600;
 }
 
-/* Inputs */
-.stTextInput input, .stSelectbox div {
-    border-radius: 10px !important;
+/* 🚀 Card UI */
+.card {
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    padding: 18px;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    border: 1px solid #334155;
+    transition: 0.3s;
 }
 
-/* Buttons */
+.card:hover {
+    transform: scale(1.02);
+    border: 1px solid #6366f1;
+}
+
+/* 🎯 Buttons */
 .stButton>button {
     width: 100%;
     border-radius: 12px;
-    height: 45px;
     background: linear-gradient(90deg, #6366f1, #9333ea);
     color: white;
-    font-weight: 600;
+    font-weight: 500;
     border: none;
 }
 
-/* Cards */
-.card {
-    background: #1e293b;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    color: white;
+.stButton>button:hover {
+    opacity: 0.9;
 }
 
-/* Mobile fix */
-@media (max-width: 768px) {
-    .block-container {
-        padding: 1rem;
-    }
+/* 🔤 Inputs */
+.stTextInput input {
+    border-radius: 10px;
 }
+
+/* 📊 Metrics */
+[data-testid="metric-container"] {
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+/* 🔘 Navigation */
+.stRadio > div {
+    flex-direction: row;
+    gap: 20px;
+}
+
+/* 🧊 Divider */
+hr {
+    border: 1px solid #334155;
+}
+
+/* 🖼 Poster */
+img {
+    border-radius: 12px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
