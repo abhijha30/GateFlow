@@ -178,6 +178,18 @@ def show():
 
     st.bar_chart(df["status"].value_counts())
 
+    # 🔍 SEARCH EVENT
+search_event = st.text_input("🔍 Search Event by Name")
+
+filtered_events = []
+
+for e in events:
+    if search_event.lower() in e["name"].lower():
+        filtered_events.append(e)
+
+if not filtered_events:
+    st.info("No events found")
+
     # ✅ DOWNLOAD FIX (UNIQUE KEY)
     st.download_button(
         "⬇️ Download Attendee List",
