@@ -26,7 +26,7 @@ search = st.text_input("🔍 Search Event")
 
 filtered_events = []
 
-for e in valid_events:
+for e in filtered_events:
     if search.lower() in e["name"].lower():
         filtered_events.append(e)
 
