@@ -21,6 +21,29 @@ def show():
 
     today = datetime.date.today()
     valid_events = []
+    # 🔍 SEARCH / FILTER
+search = st.text_input("🔍 Search Event")
+
+filtered_events = []
+
+for e in valid_events:
+    if search.lower() in e["name"].lower():
+        filtered_events.append(e)
+
+if not filtered_events:
+    st.warning("No matching events found")
+    return# 🔍 SEARCH / FILTER
+search = st.text_input("🔍 Search Event")
+
+filtered_events = []
+
+for e in valid_events:
+    if search.lower() in e["name"].lower():
+        filtered_events.append(e)
+
+if not filtered_events:
+    st.warning("No matching events found")
+    return
 
     # ✅ DEADLINE FILTER FIXED
     for e in events:
