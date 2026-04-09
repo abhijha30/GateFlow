@@ -60,7 +60,7 @@ def show():
     if not events:
         st.info("No events created")
 
-    for i, e in enumerate(events, start=1):
+    for i, e in enumerate(filtered_events, start=1):
 
         col1, col2 = st.columns([4,1])
 
